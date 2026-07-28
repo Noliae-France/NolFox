@@ -65,9 +65,9 @@ Les nouveautés de chaque version sont dans le [journal des versions](CHANGELOG.
 
 | Plateforme | État |
 |---|---|
-| Linux x86_64 | ✅ Build CI (`build.yml`) |
 | macOS (Apple Silicon et Intel) | ✅ DMG prêt à installer (`dmg.yml`) |
-| Windows x86_64 | 🧪 Build CI expérimental |
+| Linux x86_64 | ✅ Archive `.tar.xz` (`build.yml`) |
+| Windows x86_64 | 🧪 Build expérimental (`build.yml`) |
 | Android | 🔜 Prévu (base GeckoView/Fenix, dépôt dédié) |
 | iOS | 🔜 Prévu (moteur WebKit imposé par Apple, dépôt dédié) |
 
@@ -105,9 +105,9 @@ Le paquet sort dans `build/firefox-source/obj-*/dist/`.
 - **CI** (`ci.yml`, chaque push) : exécute les outils Nolc, valide
   `prefs/nolfox.js`, `policies.json` et les manifests d'extensions,
   empaquette les XPI, shellcheck des scripts.
-- **Build** (`build.yml`, manuel ou tag `v*`) : builds complets Linux,
-  macOS et Windows (expérimental) sur les sources ESR courantes,
-  artefacts + Release GitHub sur tag.
+- **Build** (`build.yml`, manuel ou tag `v*`) : build complet Linux et
+  Windows (expérimental) sur les sources ESR courantes, artefacts +
+  Release GitHub sur tag. macOS a son propre workflow, ci-dessous.
 - **DMG macOS** (`dmg.yml`, manuel ou tag `v*`) : construit NolFox pour
   Apple Silicon et Intel, fabrique le `.dmg`, vérifie qu'il se monte et
   contient bien l'application, publie l'archive et son empreinte SHA-256.
