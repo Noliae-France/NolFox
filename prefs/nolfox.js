@@ -63,7 +63,36 @@ pref("browser.toolbars.bookmarks.visibility", "always");
 pref("extensions.activeThemeID", "theme@nolfox.noliae.com");
 pref("extensions.autoDisableScopes", 0);
 pref("extensions.installDistroAddons", true);
+
+// NolFox n'est pas signe par Mozilla : sans cela, le proxy, le theme et
+// la langue francaise seraient installes puis desactives au demarrage.
+pref("xpinstall.signatures.required", false);
+pref("extensions.langpacks.signatures.required", false);
+pref("extensions.experiments.enabled", true);
+
+// Habillage NolFox charge depuis le profil (userChrome.css)
+pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+
+// Navigateur en francais
+pref("intl.locale.requested", "fr");
+pref("intl.accept_languages", "fr-FR, fr, en-US, en");
+pref("javascript.use_us_english_locale", false);
+pref("browser.search.region", "FR");
+pref("distribution.searchplugins.defaultLocale", "fr-FR");
 pref("browser.theme.dark-private-wins", true);
+
+// DNS chiffre (DoH) sur le resolveur Noliae : les requetes ne passent
+// plus en clair par le fournisseur d'acces. Mode 2 = DoH d'abord, repli
+// sur le DNS du systeme si le resolveur est injoignable (portails captifs).
+pref("network.trr.mode", 2);
+pref("network.trr.uri", "https://dns.avenqelis.com/dns-query");
+pref("network.trr.custom_uri", "https://dns.avenqelis.com/dns-query");
+pref("network.trr.default_provider_uri", "https://dns.avenqelis.com/dns-query");
+pref("network.trr.disable-ECS", true);
+pref("network.trr.send_empty_accept-encoding_headers", false);
+pref("network.dns.skipTRR-when-parental-control-enabled", false);
+pref("doh-rollout.disable-heuristics", true);
+pref("doh-rollout.skipHeuristicsCheck", true);
 
 // Écosystème Noliae : recherche + IA
 pref("browser.startup.homepage", "https://noliae.com");

@@ -67,4 +67,22 @@ print(f"Extension empaquetée : {identifiant}")
 PY
 done
 
+# Pack de langue francaise officiel de la meme version ESR : NolFox
+# s'ouvre en francais sans manipulation. La signature Mozilla n'est pas
+# valable pour un build maison, d'ou xpinstall.signatures.required a faux.
+VERSION_ESR_COURANTE="$(cat build/VERSION_ESR)"
+LANGPACK="$DIST_EXT/langpack-fr@firefox.mozilla.org.xpi"
+for plateforme in linux-x86_64 mac win64; do
+  if curl -fsSL --retry 2 -o "$LANGPACK" \
+    "https://archive.mozilla.org/pub/firefox/releases/${VERSION_ESR_COURANTE}esr/${plateforme}/xpi/fr.xpi"; then
+    echo "Pack de langue francaise embarque (${plateforme})"
+    break
+  fi
+done
+[ -s "$LANGPACK" ] || { echo "pack de langue francaise introuvable" >&2; exit 1; }
+
+# Habillage NolFox : copie dans chaque nouveau profil au premier lancement
+mkdir -p "$SRC/browser/branding/nolfox/distribution/profile/chrome"
+cp branding/userChrome.css "$SRC/browser/branding/nolfox/distribution/profile/chrome/userChrome.css"
+
 echo "Branding NolFox appliqué"

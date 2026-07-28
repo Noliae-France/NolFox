@@ -30,7 +30,10 @@
         }
       ],
       "Default": "Noliae",
-      "Remove": ["Google", "Bing"]
+      "Remove": [
+        "Google",
+        "Bing"
+      ]
     },
     "Homepage": {
       "URL": "https://noliae.com",
@@ -46,7 +49,18 @@
         "Title": "Recherche Noliae",
         "URL": "https://noliae.com",
         "Placement": "toolbar"
+      },
+      {
+        "Title": "VPN Noliae",
+        "URL": "https://vpn.avenqelis.com",
+        "Placement": "toolbar"
       }
-    ]
+    ],
+    "DNSOverHTTPS": {
+      "Enabled": true,
+      "ProviderURL": "https://dns.avenqelis.com/dns-query",
+      "Locked": false,
+      "Fallback": true
+    }
   }
 }
