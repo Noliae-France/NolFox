@@ -47,12 +47,24 @@ cp distribution/policies.json "$SRC/browser/branding/nolfox/distribution/policie
 # auto-installées au premier lancement via distribution/extensions
 DIST_EXT="$SRC/browser/branding/nolfox/distribution/extensions"
 mkdir -p "$DIST_EXT"
+# L'archive est construite par python plutôt que par « zip », absent des
+# runners Windows ; les entrées sont triées pour un XPI reproductible.
 for ext in extensions/*/; do
-  nom="$(basename "$ext")"
-  id="$(python3 -c "import json;print(json.load(open('$ext/manifest.json'))['browser_specific_settings']['gecko']['id'])")"
-  (cd "$ext" && zip -qrX "../../$nom.xpi" .)
-  mv "$nom.xpi" "$DIST_EXT/$id.xpi"
-  echo "Extension empaquetée : $id"
+  python3 - "$ext" "$DIST_EXT" <<'PY'
+import json, pathlib, sys, zipfile
+
+source = pathlib.Path(sys.argv[1])
+destination = pathlib.Path(sys.argv[2])
+identifiant = json.loads((source / "manifest.json").read_text())[
+    "browser_specific_settings"]["gecko"]["id"]
+
+xpi = destination / f"{identifiant}.xpi"
+fichiers = sorted(p for p in source.rglob("*") if p.is_file())
+with zipfile.ZipFile(xpi, "w", zipfile.ZIP_DEFLATED) as archive:
+    for fichier in fichiers:
+        archive.write(fichier, fichier.relative_to(source).as_posix())
+print(f"Extension empaquetée : {identifiant}")
+PY
 done
 
 echo "Branding NolFox appliqué"

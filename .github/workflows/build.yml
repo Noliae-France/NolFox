@@ -7,6 +7,7 @@ on:
 
 jobs:
   desktop:
+    # macOS a son workflow dedie : .github/workflows/dmg.yml
     name: NolFox ${{ matrix.nom }} (base Firefox ESR)
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
@@ -18,10 +19,6 @@ jobs:
           - nom: Linux x86_64
             os: ubuntu-latest
             artefact: nolfox-linux-x86_64
-            experimental: false
-          - nom: macOS
-            os: macos-latest
-            artefact: nolfox-macos
             experimental: false
           - nom: Windows x86_64
             os: windows-latest
