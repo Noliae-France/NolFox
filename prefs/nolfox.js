@@ -101,3 +101,11 @@ pref("browser.startup.homepage", "https://noliae.com");
 pref("distribution.about", "NolFox par Noliae");
 pref("startup.homepage_welcome_url", "");
 pref("startup.homepage_override_url", "");
+
+// Proxy / VPN Noliae : quand un proxy chiffré demande un certificat client
+// (mTLS), NolFox présente automatiquement le sien sans jamais demander à
+// l'utilisateur -> le navigateur est "contacté et validé automatiquement".
+pref("security.default_personal_cert", "Select Automatically");
+// Ne pas fuiter les requêtes DNS hors du tunnel quand un proxy SOCKS/HTTPS est actif.
+pref("network.proxy.socks_remote_dns", true);
+pref("network.proxy.failover_direct", false);

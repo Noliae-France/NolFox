@@ -25,6 +25,27 @@ sed -i.bak 's/^MOZ_APP_DISPLAYNAME=.*/MOZ_APP_DISPLAYNAME=NolFox/' \
   "$SRC/browser/branding/nolfox/configure.sh"
 find "$SRC/browser/branding/nolfox" -name '*.bak' -delete
 
+# Chaines de marque : la base "unofficial" dit "Firefox" dans brand.ftl /
+# brand.properties -> tout passer en NolFox, sinon l'UI affiche encore
+# "Firefox n'est pas votre navigateur par defaut", etc.
+rebrand_marque() {
+  local cible="$1"
+  find "$cible" \( -name 'brand.ftl' -o -name 'brand.properties' \) -print0 \
+    | while IFS= read -r -d '' f; do
+    sed -i.bak -E \
+      -e 's/(-brand-shorter-name[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
+      -e 's/(-brand-short-name[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
+      -e 's/(-brand-full-name[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
+      -e 's/(-brand-product-name[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
+      -e 's/(brandShorterName[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
+      -e 's/(brandShortName[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
+      -e 's/(brandFullName[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
+      "$f"
+    rm -f "$f.bak"
+  done
+}
+rebrand_marque "$SRC/browser/branding/nolfox"
+
 # Icônes NolFox : PNG Linux, ICO Windows, ICNS macOS + logos about:
 B="$SRC/browser/branding/nolfox"
 for f in branding/default*.png; do cp "$f" "$B/$(basename "$f")"; done
@@ -87,6 +108,28 @@ for plateforme in linux-x86_64 mac win64; do
   fi
 done
 [ -s "$LANGPACK" ] || { echo "pack de langue francaise introuvable" >&2; exit 1; }
+
+# Le langpack fr de Mozilla embarque ses propres brand.ftl/brand.properties
+# disant "Firefox" : les reecrire en NolFox pour que l'UI francaise n'affiche
+# jamais "Firefox". Extraction/repack en python (zip absent des runners Windows).
+TMPFR="$(mktemp -d)"
+python3 - "$LANGPACK" "$TMPFR" <<'PY'
+import sys, zipfile, pathlib
+zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])
+PY
+rebrand_marque "$TMPFR"
+( cd "$TMPFR" && python3 - "$LANGPACK" <<'PY'
+import sys, zipfile, pathlib
+xpi = pathlib.Path(sys.argv[1])
+root = pathlib.Path('.')
+fichiers = sorted(p for p in root.rglob('*') if p.is_file())
+with zipfile.ZipFile(xpi, 'w', zipfile.ZIP_DEFLATED) as z:
+    for f in fichiers:
+        z.write(f, f.relative_to(root).as_posix())
+PY
+)
+rm -rf "$TMPFR"
+echo "Langpack fr rebrande NolFox"
 
 # Habillage NolFox : copie dans chaque nouveau profil au premier lancement
 mkdir -p "$SRC/browser/branding/nolfox/distribution/profile/chrome"
