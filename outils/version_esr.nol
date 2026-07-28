@@ -1,13 +1,13 @@
 # Outil NolFox : extrait la version Firefox ESR courante depuis le JSON
-# product-details de Mozilla (telecharge par scripts/fetch.sh).
+# product-details de Mozilla (télécharge par scripts/fetch.sh).
 # Usage : nolc run outils/version_esr.nol -- product_details.json
 
 fn extrait(json: Text, cle: Text) -> Option<Text> {
     let motif = "\"" + cle + "\":"
     let pos_o = find(json, motif)
     if not has(pos_o) { return none }
-    let apres = unwrap_or(pos_o, 0) + len(motif)
-    let reste = sub(json, apres, len(json) - apres)
+    let debut = unwrap_or(pos_o, 0) + len(motif)
+    let reste = sub(json, debut, len(json) - debut)
     let q1_o = find(reste, "\"")
     if not has(q1_o) { return none }
     let q1 = unwrap_or(q1_o, 0)
@@ -31,7 +31,7 @@ fn main() {
     let contenu = unwrap_or(contenu_o, "")
     let v_o = extrait(contenu, "FIREFOX_ESR")
     if not has(v_o) {
-        print("erreur: cle FIREFOX_ESR introuvable")
+        print("erreur: clé FIREFOX_ESR introuvable")
         return
     }
     var version = unwrap_or(v_o, "")
@@ -41,7 +41,7 @@ fn main() {
         version = sub(version, 0, unwrap_or(p_esr, 0))
     }
     if not file_write("VERSION_ESR", version) {
-        print("erreur: ecriture VERSION_ESR impossible")
+        print("erreur: écriture VERSION_ESR impossible")
         return
     }
     print(version)

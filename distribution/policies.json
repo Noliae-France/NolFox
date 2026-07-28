@@ -4,6 +4,12 @@
     "DisableFirefoxStudies": true,
     "DisablePocket": true,
     "DontCheckDefaultBrowser": true,
+    "EnableTrackingProtection": {
+      "Value": true,
+      "Locked": false,
+      "Cryptomining": true,
+      "Fingerprinting": true
+    },
     "EncryptedMediaExtensions": {
       "Enabled": true,
       "Locked": false
@@ -11,6 +17,36 @@
     "FirefoxHome": {
       "SponsoredTopSites": false,
       "SponsoredPocket": false
-    }
+    },
+    "SearchEngines": {
+      "Add": [
+        {
+          "Name": "Noliae",
+          "URLTemplate": "https://noliae.com/search?q={searchTerms}",
+          "Method": "GET",
+          "IconURL": "https://noliae.com/favicon.ico",
+          "Alias": "@noliae",
+          "Description": "Moteur de recherche Noliae"
+        }
+      ],
+      "Default": "Noliae",
+      "Remove": ["Google", "Bing"]
+    },
+    "Homepage": {
+      "URL": "https://noliae.com",
+      "StartPage": "homepage"
+    },
+    "Bookmarks": [
+      {
+        "Title": "Noliae IA",
+        "URL": "https://ia.noliae.com",
+        "Placement": "toolbar"
+      },
+      {
+        "Title": "Recherche Noliae",
+        "URL": "https://noliae.com",
+        "Placement": "toolbar"
+      }
+    ]
   }
 }

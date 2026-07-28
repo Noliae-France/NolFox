@@ -1,7 +1,7 @@
 # Outil NolFox : valide prefs/nolfox.js avant injection dans le build.
-# Chaque ligne non vide doit etre un commentaire (// ou #) ou un appel
-# pref("...", ...); bien forme. Garde-fou CI : une pref cassee rend le
-# navigateur silencieusement sans defaults.
+# Chaque ligne non vide doit être un commentaire (// ou #) ou un appel
+# pref("...", ...); bien formé. Garde-fou CI : une pref cassée rend le
+# navigateur silencieusement sans défauts.
 # Usage : nolc run outils/verifie_prefs.nol -- prefs/nolfox.js
 
 fn ligne_valide(l: Text) -> Bool {

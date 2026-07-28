@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Telecharge les sources Firefox ESR courantes dans build/firefox-source.
+# Télécharge les sources Firefox ESR courantes dans build/firefox-source.
 # La version est extraite du product-details Mozilla par l'outil Nolc.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -17,11 +17,11 @@ TARBALL="firefox-${VERSION}esr.source.tar.xz"
 URL="https://archive.mozilla.org/pub/firefox/releases/${VERSION}esr/source/${TARBALL}"
 
 if [ ! -f "build/${TARBALL}" ]; then
-  echo "Telechargement ${URL}"
+  echo "Téléchargement ${URL}"
   curl -fL --retry 3 -o "build/${TARBALL}" "${URL}"
 fi
 
 rm -rf build/firefox-source
 mkdir -p build/firefox-source
 tar -xJf "build/${TARBALL}" -C build/firefox-source --strip-components=1
-echo "Sources pretes dans build/firefox-source"
+echo "Sources prêtes dans build/firefox-source"
