@@ -108,6 +108,8 @@ for plateforme in linux-x86_64 mac win64; do
   fi
 done
 [ -s "$LANGPACK" ] || { echo "pack de langue francaise introuvable" >&2; exit 1; }
+# Chemin absolu : le repack s'effectue depuis un autre repertoire.
+LANGPACK="$(cd "$(dirname "$LANGPACK")" && pwd)/$(basename "$LANGPACK")"
 
 # Le langpack fr de Mozilla embarque ses propres brand.ftl/brand.properties
 # disant "Firefox" : les reecrire en NolFox pour que l'UI francaise n'affiche
