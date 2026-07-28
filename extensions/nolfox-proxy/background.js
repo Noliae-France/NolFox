@@ -3,9 +3,11 @@
 
 const DEFAUTS = {
   actif: false,
-  hote: "proxy.noliae.com",
+  hote: "proxy.avenqelis.com",
   port: 443,
-  type: "https"
+  type: "https",
+  identifiant: "",
+  motdepasse: ""
 };
 
 let etat = { ...DEFAUTS };
@@ -48,6 +50,22 @@ browser.proxy.onRequest.addListener(
 );
 
 // En cas d'erreur proxy, on repasse en direct plutôt que de casser la navigation.
+// Le proxy exige une authentification : elle est fournie ici, jamais
+// stockée en clair dans une URL ni envoyée à un autre hôte.
+browser.webRequest.onAuthRequired.addListener(
+  (details) => {
+    if (!details.isProxy || !etat.actif || !etat.identifiant) return {};
+    return {
+      authCredentials: {
+        username: etat.identifiant,
+        password: etat.motdepasse
+      }
+    };
+  },
+  { urls: ["<all_urls>"] },
+  ["blocking"]
+);
+
 browser.proxy.onError.addListener(() => {
   etat.actif = false;
   browser.storage.local.set({ actif: false });

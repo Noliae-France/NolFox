@@ -9,7 +9,7 @@
       "strict_min_version": "115.0"
     }
   },
-  "permissions": ["proxy", "storage", "browsingData", "<all_urls>"],
+  "permissions": ["proxy", "storage", "browsingData", "webRequest", "webRequestBlocking", "<all_urls>"],
   "background": {
     "scripts": ["background.js"]
   },

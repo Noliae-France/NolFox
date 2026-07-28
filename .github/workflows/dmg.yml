@@ -1,0 +1,120 @@
+name: DMG macOS
+
+# Construit NolFox pour macOS et publie le .dmg prêt à installer.
+on:
+  workflow_dispatch:
+    inputs:
+      publier:
+        description: "Publier le DMG dans une Release GitHub"
+        type: boolean
+        default: false
+  push:
+    tags: ['v*']
+
+jobs:
+  dmg:
+    name: NolFox.dmg (${{ matrix.arche }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arche: apple-silicon
+            runner: macos-14
+          - arche: intel
+            runner: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Espace disque disponible
+        run: df -h /
+
+      - name: Outils de build macOS
+        run: |
+          brew install --quiet mercurial gnu-tar zip || true
+          python3 -m pip install --quiet --break-system-packages pillow || true
+
+      - name: Installer nolc (outillage Nolc)
+        continue-on-error: true
+        run: |
+          cargo install --git https://github.com/Noliae-France/Noliae-Langue --locked nolc \
+            || echo "nolc indisponible : repli python pour la version ESR"
+
+      - name: Récupérer les sources Firefox ESR
+        run: |
+          if ! command -v nolc >/dev/null; then
+            mkdir -p build
+            curl -fsSL https://product-details.mozilla.org/1.0/firefox_versions.json \
+              -o build/firefox_versions.json
+            python3 -c "import json;v=json.load(open('build/firefox_versions.json'))['FIREFOX_ESR'].removesuffix('esr');open('VERSION_ESR','w').write(v);print('ESR',v)"
+          fi
+          bash scripts/fetch.sh
+
+      - name: Appliquer le branding NolFox (icônes, thème, proxy, prefs)
+        run: bash scripts/brand.sh
+
+      - name: Compiler et empaqueter
+        run: |
+          cd build/firefox-source
+          ./mach --no-interactive bootstrap --application-choice browser
+          ./mach build
+          ./mach package
+
+      - name: Fabriquer le DMG
+        id: paquet
+        run: |
+          cd build/firefox-source
+          VERSION="$(cat ../VERSION_ESR 2>/dev/null || echo inconnue)"
+          DMG_SRC="$(find obj-*/dist -maxdepth 1 -name '*.dmg' | head -1)"
+
+          if [ -z "$DMG_SRC" ]; then
+            # mach package n'a pas produit de DMG : on l'assemble depuis le .app
+            APP="$(find obj-*/dist -maxdepth 2 -name 'NolFox.app' -o -maxdepth 2 -name '*.app' | head -1)"
+            [ -n "$APP" ] || { echo "aucune application construite"; exit 1; }
+            STAGING="$(mktemp -d)/NolFox"
+            mkdir -p "$STAGING"
+            cp -R "$APP" "$STAGING/"
+            ln -s /Applications "$STAGING/Applications"
+            DMG_SRC="obj-build/dist/NolFox.dmg"
+            mkdir -p "$(dirname "$DMG_SRC")"
+            hdiutil create -volname "NolFox" -srcfolder "$STAGING" \
+              -ov -format UDZO "$DMG_SRC"
+          fi
+
+          NOM="NolFox-${VERSION}-${{ matrix.arche }}.dmg"
+          mkdir -p "$GITHUB_WORKSPACE/livraison"
+          cp "$DMG_SRC" "$GITHUB_WORKSPACE/livraison/$NOM"
+          cd "$GITHUB_WORKSPACE/livraison"
+          shasum -a 256 "$NOM" > "$NOM.sha256"
+          echo "nom=$NOM" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          ls -lh
+
+      - name: Vérifier que le DMG est montable
+        run: |
+          cd livraison
+          hdiutil attach "${{ steps.paquet.outputs.nom }}" -nobrowse -mountpoint /tmp/nolfox-dmg
+          ls -la /tmp/nolfox-dmg
+          test -d /tmp/nolfox-dmg/*.app && echo "application présente dans le DMG"
+          hdiutil detach /tmp/nolfox-dmg
+
+      - name: Publier l'artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nolfox-dmg-${{ matrix.arche }}
+          path: livraison/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Release GitHub
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.publier
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          case "$TAG" in v*) ;; *) TAG="dmg-${{ steps.paquet.outputs.version }}" ;; esac
+          gh release create "$TAG" livraison/* \
+            --title "NolFox $TAG" \
+            --notes "NolFox pour macOS (${{ matrix.arche }}), base Firefox ESR ${{ steps.paquet.outputs.version }}esr. Widevine actif, proxy Noliae et thème Pulse intégrés." \
+            || gh release upload "$TAG" livraison/* --clobber

@@ -20,7 +20,7 @@
     h1 span { color: var(--pulse); }
     .ligne { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
     label { font-size: 12px; }
-    input[type="text"], input[type="number"] {
+    input[type="text"], input[type="number"], input[type="password"] {
       background: #1a1a20; color: var(--texte); border: 1px solid #333;
       border-radius: 3px; padding: 4px 6px; width: 130px;
       font-family: "JetBrains Mono", monospace; font-size: 11px;
@@ -44,6 +44,14 @@
   <div class="ligne">
     <label for="port">Port</label>
     <input type="number" id="port" min="1" max="65535">
+  </div>
+  <div class="ligne">
+    <label for="identifiant">Identifiant</label>
+    <input type="text" id="identifiant">
+  </div>
+  <div class="ligne">
+    <label for="motdepasse">Mot de passe</label>
+    <input type="password" id="motdepasse">
   </div>
   <button id="bascule" class="off">Activer le proxy</button>
   <div class="statut" id="statut">Proxy inactif</div>

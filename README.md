@@ -24,7 +24,14 @@ une interface repensée, l'écosystème Noliae et une vie privée sans compromis
 - **NolFox Proxy** (`extensions/nolfox-proxy`) : extension embarquée qui
   route le trafic via le proxy chiffré Noliae. Un clic sur l'icône, le badge
   passe à `ON`, votre adresse IP est masquée. Les adresses locales restent en
-  direct et une panne du proxy ne casse jamais la navigation.
+  direct et une panne du proxy ne casse jamais la navigation. Le service
+  tourne sur l'infrastructure Noliae (`proxy.avenqelis.com:443`), en CONNECT
+  authentifié, sans aucun journal de navigation.
+- **DNS chiffré (DoH)** : résolveur `https://dns.avenqelis.com/dns-query`,
+  filtrage des traqueurs et publicités à la source, requêtes anonymisées et
+  journal des requêtes désactivé.
+- **VPN WireGuard** : accès complet au tunnel Noliae, administration sur
+  `vpn.avenqelis.com`.
 - **Thème Pulse** (`extensions/nolfox-theme`) : identité visuelle Noliae,
   fond sombre `#101014`, accent `#FF4D2E`, appliqué dès le premier lancement.
 - **Écosystème Noliae** : recherche noliae.com par défaut, page d'accueil
@@ -35,7 +42,7 @@ une interface repensée, l'écosystème Noliae et une vie privée sans compromis
 | Plateforme | État |
 |---|---|
 | Linux x86_64 | ✅ Build CI (`build.yml`) |
-| macOS (Apple Silicon) | ✅ Build CI (`build.yml`) |
+| macOS (Apple Silicon et Intel) | ✅ DMG prêt à installer (`dmg.yml`) |
 | Windows x86_64 | 🧪 Build CI expérimental |
 | Android | 🔜 Prévu (base GeckoView/Fenix, dépôt dédié) |
 | iOS | 🔜 Prévu (moteur WebKit imposé par Apple, dépôt dédié) |
@@ -77,6 +84,9 @@ Le paquet sort dans `build/firefox-source/obj-*/dist/`.
 - **Build** (`build.yml`, manuel ou tag `v*`) : builds complets Linux,
   macOS et Windows (expérimental) sur les sources ESR courantes,
   artefacts + Release GitHub sur tag.
+- **DMG macOS** (`dmg.yml`, manuel ou tag `v*`) : construit NolFox pour
+  Apple Silicon et Intel, fabrique le `.dmg`, vérifie qu'il se monte et
+  contient bien l'application, publie l'archive et son empreinte SHA-256.
 
 ## Licences
 
