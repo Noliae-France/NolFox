@@ -35,7 +35,14 @@ cp branding/about-logo.png "$B/content/about-logo.png"
 cp branding/about-logo@2x.png "$B/content/about-logo@2x.png"
 cp branding/nolfox.svg "$B/content/about-logo.svg" 2>/dev/null || true
 
-# Prefs NolFox ajoutées aux défauts du branding
+# Prefs NolFox. Elles sont ajoutées à la FIN de browser/app/profile/firefox.js
+# et non au seul branding : les fichiers de defaults/preferences se chargent
+# par ordre alphabétique, si bien que firefox.js écrasait nos valeurs (les
+# extensions et la langue française se retrouvaient désactivées au démarrage).
+{
+  printf '\n// --- Préférences NolFox (chargées en dernier) ---\n'
+  cat prefs/nolfox.js
+} >> "$SRC/browser/app/profile/firefox.js"
 cat prefs/nolfox.js >> "$SRC/browser/branding/nolfox/pref/firefox-branding.js"
 
 # mozconfig + policies d'entreprise embarquées

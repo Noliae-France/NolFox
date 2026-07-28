@@ -77,6 +77,29 @@ jobs:
           bash scripts/build.sh
           df -h /
 
+      - name: Vérifier que le paquet Linux est complet
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          ARCHIVE="$(find build/firefox-source/obj-*/dist -name '*.tar.xz' | head -1)"
+          [ -n "$ARCHIVE" ] || { echo "aucune archive produite"; exit 1; }
+          for attendu in \
+            nolfox/distribution/policies.json \
+            nolfox/distribution/extensions/proxy@nolfox.noliae.com.xpi \
+            nolfox/distribution/extensions/theme@nolfox.noliae.com.xpi \
+            nolfox/distribution/extensions/langpack-fr@firefox.mozilla.org.xpi \
+            nolfox/distribution/profile/chrome/userChrome.css; do
+            tar tJf "$ARCHIVE" | grep -q "$attendu" || { echo "manquant : $attendu"; exit 1; }
+          done
+          # Les préférences NolFox doivent gagner sur celles de Firefox
+          tar xJf "$ARCHIVE" -C /tmp nolfox/browser/omni.ja
+          mkdir -p /tmp/verif && cd /tmp/verif
+          unzip -o -q /tmp/nolfox/browser/omni.ja "defaults/preferences/*"
+          derniere="$(grep -h 'xpinstall.signatures.required' defaults/preferences/*.js | tail -1)"
+          echo "$derniere" | grep -q false \
+            || { echo "les signatures restent exigées : extensions désactivées au démarrage"; exit 1; }
+          echo "paquet Linux complet et préférences NolFox prioritaires"
+
       - name: Publier l'artefact
         uses: actions/upload-artifact@v4
         with:
