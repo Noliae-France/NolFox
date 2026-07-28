@@ -5,6 +5,10 @@ on:
   push:
     tags: ['v*']
 
+# Publier une Release exige le droit d'ecriture sur le depot.
+permissions:
+  contents: write
+
 jobs:
   desktop:
     # macOS a son workflow dedie : .github/workflows/dmg.yml

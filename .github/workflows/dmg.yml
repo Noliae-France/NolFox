@@ -11,6 +11,10 @@ on:
   push:
     tags: ['v*']
 
+# Publier une Release exige le droit d'ecriture sur le depot.
+permissions:
+  contents: write
+
 jobs:
   dmg:
     name: NolFox.dmg (${{ matrix.arche }})
