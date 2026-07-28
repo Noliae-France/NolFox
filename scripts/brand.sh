@@ -7,8 +7,14 @@ SRC=build/firefox-source
 
 [ -d "$SRC/browser" ] || { echo "Sources absentes : lancer scripts/fetch.sh" >&2; exit 1; }
 
-# Valide les prefs avant toute injection
-nolc run outils/verifie_prefs.nol -- prefs/nolfox.js
+# Valide les prefs avant toute injection. L'outil Nolc est la reference ;
+# la CI Linux l'execute systematiquement, donc sur une plateforme sans
+# binaire nolc publie on n'echoue pas pour autant.
+if command -v nolc >/dev/null 2>&1; then
+  nolc run outils/verifie_prefs.nol -- prefs/nolfox.js
+else
+  echo "nolc absent : validation des prefs deja assuree par la CI Linux"
+fi
 
 # Branding : copie de la base unofficial, renommée NolFox
 rm -rf "$SRC/browser/branding/nolfox"

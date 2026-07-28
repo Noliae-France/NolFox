@@ -35,12 +35,6 @@ jobs:
           brew install --quiet mercurial gnu-tar zip || true
           python3 -m pip install --quiet --break-system-packages pillow || true
 
-      - name: Installer nolc (outillage Nolc)
-        continue-on-error: true
-        run: |
-          cargo install --git https://github.com/Noliae-France/Noliae-Langue --locked nolc \
-            || echo "nolc indisponible : repli python pour la version ESR"
-
       - name: Récupérer les sources Firefox ESR
         run: bash scripts/fetch.sh
 
