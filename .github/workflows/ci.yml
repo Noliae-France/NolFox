@@ -14,9 +14,9 @@ jobs:
 
       - name: Installer nolc (release S3 Noliae)
         run: |
-          curl -fsSL -o /tmp/nolc.deb \
-            https://noliae-nolc.s3.gra.io.cloud.ovh.net/nolc-latest-amd64.deb
-          sudo dpkg -i /tmp/nolc.deb
+          cd /tmp
+          curl -fsSL https://noliae-nolc.s3.gra.io.cloud.ovh.net/nolc-latest-linux-x86_64.tar.gz | tar xz
+          sudo install -m 0755 "$(find /tmp -maxdepth 2 -name nolc -type f | head -1)" /usr/local/bin/nolc
           nolc --version
 
       - name: Valider les prefs NolFox

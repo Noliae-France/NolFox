@@ -42,14 +42,7 @@ jobs:
             || echo "nolc indisponible : repli python pour la version ESR"
 
       - name: Récupérer les sources Firefox ESR
-        run: |
-          if ! command -v nolc >/dev/null; then
-            mkdir -p build
-            curl -fsSL https://product-details.mozilla.org/1.0/firefox_versions.json \
-              -o build/firefox_versions.json
-            python3 -c "import json;v=json.load(open('build/firefox_versions.json'))['FIREFOX_ESR'].removesuffix('esr');open('VERSION_ESR','w').write(v);print('ESR',v)"
-          fi
-          bash scripts/fetch.sh
+        run: bash scripts/fetch.sh
 
       - name: Appliquer le branding NolFox (icônes, thème, proxy, prefs)
         run: bash scripts/brand.sh
