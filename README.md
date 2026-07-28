@@ -1,9 +1,31 @@
 # NolFox
 
+[![CI](https://github.com/Noliae-France/NolFox/actions/workflows/ci.yml/badge.svg)](https://github.com/Noliae-France/NolFox/actions/workflows/ci.yml)
+[![DMG macOS](https://github.com/Noliae-France/NolFox/actions/workflows/dmg.yml/badge.svg)](https://github.com/Noliae-France/NolFox/actions/workflows/dmg.yml)
+[![Build NolFox](https://github.com/Noliae-France/NolFox/actions/workflows/build.yml/badge.svg)](https://github.com/Noliae-France/NolFox/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/Noliae-France/NolFox?label=release&color=FF4D2E)](https://github.com/Noliae-France/NolFox/releases/latest)
+[![Licence](https://img.shields.io/badge/licence-MPL--2.0-FF4D2E)](LICENSE)
+
 **Le navigateur de Noliae.** Basé sur **Firefox ESR** (canal long support de
 Mozilla), NolFox garde le moteur Gecko, sa stabilité et ses correctifs de
 sécurité, et y ajoute ce que Firefox n'offre pas : un proxy chiffré intégré,
 une interface repensée, l'écosystème Noliae et une vie privée sans compromis.
+
+## Téléchargement
+
+Les versions sont publiées sur la [page des Releases](https://github.com/Noliae-France/NolFox/releases/latest).
+
+| Plateforme | Fichier |
+|---|---|
+| macOS Apple Silicon | `NolFox-<version>-apple-silicon.dmg` |
+| macOS Intel | `NolFox-<version>-intel.dmg` |
+| Linux x86_64 | `nolfox-<version>.tar.xz` |
+
+Chaque archive est accompagnée de son empreinte `.sha256`. Pour vérifier :
+
+```bash
+shasum -a 256 -c NolFox-*.dmg.sha256
+```
 
 ## Ce que NolFox a en plus de Firefox
 
