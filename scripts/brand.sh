@@ -19,6 +19,16 @@ sed -i.bak 's/^MOZ_APP_DISPLAYNAME=.*/MOZ_APP_DISPLAYNAME=NolFox/' \
   "$SRC/browser/branding/nolfox/configure.sh"
 find "$SRC/browser/branding/nolfox" -name '*.bak' -delete
 
+# Icônes NolFox : PNG Linux, ICO Windows, ICNS macOS + logos about:
+B="$SRC/browser/branding/nolfox"
+for f in branding/default*.png; do cp "$f" "$B/$(basename "$f")"; done
+cp branding/firefox.ico branding/document.ico "$B/"
+cp branding/firefox.icns branding/document.icns "$B/"
+mkdir -p "$B/content"
+cp branding/about-logo.png "$B/content/about-logo.png"
+cp branding/about-logo@2x.png "$B/content/about-logo@2x.png"
+cp branding/nolfox.svg "$B/content/about-logo.svg" 2>/dev/null || true
+
 # Prefs NolFox ajoutées aux défauts du branding
 cat prefs/nolfox.js >> "$SRC/browser/branding/nolfox/pref/firefox-branding.js"
 

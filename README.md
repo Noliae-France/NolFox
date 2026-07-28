@@ -48,6 +48,7 @@ officielles puis applique le tout.
 
 | Chemin | Rôle |
 |---|---|
+| `branding/` | Icônes NolFox : source SVG, PNG Linux, `.ico` Windows, `.icns` macOS |
 | `outils/` | Outils **Nolc** : `version_esr.nol` (version ESR upstream), `verifie_prefs.nol` (garde-fou prefs) |
 | `extensions/` | NolFox Proxy + thème Pulse, empaquetés en XPI au build |
 | `prefs/nolfox.js` | Défauts NolFox (DRM, vie privée, anti-pistage, interface, Noliae) |

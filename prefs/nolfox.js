@@ -49,6 +49,13 @@ pref("extensions.getAddons.showPane", false);
 pref("browser.discovery.enabled", false);
 pref("dom.private-attribution.submission.enabled", false);
 
+// Couleurs de lancement : fenêtre sombre Pulse dès l'ouverture,
+// jamais de flash blanc au démarrage ni entre les pages
+pref("browser.display.background_color.dark", "#101014");
+pref("browser.startup.blankWindow", false);
+pref("browser.startup.preXulSkeletonUI", true);
+pref("layout.css.prefers-color-scheme.content-override", 2);
+
 // Interface NolFox : densité compacte autorisée, thème Pulse embarqué
 pref("browser.compactmode.show", true);
 pref("browser.uidensity", 1);

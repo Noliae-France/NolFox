@@ -41,6 +41,21 @@ jobs:
           node --check extensions/nolfox-proxy/background.js
           node --check extensions/nolfox-proxy/popup.js
 
+      - name: Valider les icônes (formats + tailles)
+        run: |
+          for f in branding/firefox.ico branding/document.ico branding/firefox.icns branding/document.icns branding/nolfox.svg; do
+            [ -s "$f" ] || { echo "manquant : $f"; exit 1; }
+          done
+          pip install --quiet pillow
+          python3 - <<'EOF'
+          from PIL import Image
+          for s in (16, 32, 48, 64, 128, 256, 512):
+              img = Image.open(f"branding/default{s}.png")
+              assert img.size == (s, s), f"default{s}.png : taille {img.size}"
+          ico = Image.open("branding/firefox.ico")
+          print("icônes OK, ICO :", ico.size)
+          EOF
+
       - name: Shellcheck scripts
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
