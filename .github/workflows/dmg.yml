@@ -32,8 +32,13 @@ jobs:
 
       - name: Outils de build macOS
         run: |
-          brew install --quiet mercurial gnu-tar zip || true
-          python3 -m pip install --quiet --break-system-packages pillow || true
+          brew install --quiet mercurial gnu-tar zip python@3.11 || true
+          # mach de Firefox ESR n'est pas compatible avec Python 3.12+
+          # (l'API ast.Constant.s a disparu) : on lui fournit Python 3.11.
+          PY311="$(brew --prefix python@3.11)/bin/python3.11"
+          "$PY311" -m pip install --quiet --upgrade pip setuptools wheel || true
+          echo "PY311=$PY311" >> "$GITHUB_ENV"
+          "$PY311" --version
 
       - name: Récupérer les sources Firefox ESR
         run: bash scripts/fetch.sh
@@ -44,9 +49,9 @@ jobs:
       - name: Compiler et empaqueter
         run: |
           cd build/firefox-source
-          ./mach --no-interactive bootstrap --application-choice browser
-          ./mach build
-          ./mach package
+          "$PY311" ./mach --no-interactive bootstrap --application-choice browser
+          "$PY311" ./mach build
+          "$PY311" ./mach package
 
       - name: Fabriquer le DMG
         id: paquet
