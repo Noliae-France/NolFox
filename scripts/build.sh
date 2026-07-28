@@ -40,12 +40,13 @@ for archive in obj-*/dist/*.tar.xz; do
   injecter_dans_archive "$(cd "$(dirname "$archive")" && pwd)/$(basename "$archive")"
 done
 
-# Sur macOS la distribution se loge dans les ressources de l'application.
-for app in obj-*/dist/*.app obj-*/dist/*/*.app; do
+# Sur macOS la distribution se loge dans les ressources de l'application
+# principale (les applications auxiliaires n'en ont pas l'usage).
+for app in obj-*/dist/NolFox.app obj-*/dist/*/NolFox.app; do
   [ -d "$app" ] || continue
   mkdir -p "$app/Contents/Resources/distribution"
   cp -R browser/branding/nolfox/distribution/. "$app/Contents/Resources/distribution/"
-  echo "distribution NolFox installée dans $(basename "$app")"
+  echo "distribution NolFox installée dans $app"
 done
 
 echo "Paquets générés :"

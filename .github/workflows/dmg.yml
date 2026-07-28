@@ -58,21 +58,22 @@ jobs:
         run: |
           cd build/firefox-source
           VERSION="$(cat ../VERSION_ESR 2>/dev/null || echo inconnue)"
-          DMG_SRC="$(find obj-*/dist -maxdepth 1 -name '*.dmg' | head -1)"
 
-          if [ -z "$DMG_SRC" ]; then
-            # mach package n'a pas produit de DMG : on l'assemble depuis le .app
-            APP="$(find obj-*/dist -maxdepth 2 -name 'NolFox.app' -o -maxdepth 2 -name '*.app' | head -1)"
-            [ -n "$APP" ] || { echo "aucune application construite"; exit 1; }
-            STAGING="$(mktemp -d)/NolFox"
-            mkdir -p "$STAGING"
-            cp -R "$APP" "$STAGING/"
-            ln -s /Applications "$STAGING/Applications"
-            DMG_SRC="obj-build/dist/NolFox.dmg"
-            mkdir -p "$(dirname "$DMG_SRC")"
-            hdiutil create -volname "NolFox" -srcfolder "$STAGING" \
-              -ov -format UDZO "$DMG_SRC"
-          fi
+          # Le DMG est TOUJOURS reconstruit depuis l'application : celui que
+          # « mach package » produit est figé avant l'ajout de la distribution
+          # NolFox (proxy, thème, langue française, policies).
+          APP="$(find obj-*/dist -maxdepth 2 -name 'NolFox.app' | head -1)"
+          [ -n "$APP" ] || { echo "aucune application construite"; exit 1; }
+          [ -d "$APP/Contents/Resources/distribution/extensions" ] \
+            || { echo "distribution NolFox absente de l'application"; exit 1; }
+
+          STAGING="$(mktemp -d)/NolFox"
+          mkdir -p "$STAGING"
+          cp -R "$APP" "$STAGING/"
+          ln -s /Applications "$STAGING/Applications"
+          DMG_SRC="$(mktemp -d)/NolFox.dmg"
+          hdiutil create -volname "NolFox" -srcfolder "$STAGING" \
+            -ov -format UDZO "$DMG_SRC"
 
           NOM="NolFox-${VERSION}-${{ matrix.arche }}.dmg"
           mkdir -p "$GITHUB_WORKSPACE/livraison"
@@ -88,7 +89,15 @@ jobs:
           cd livraison
           hdiutil attach "${{ steps.paquet.outputs.nom }}" -nobrowse -mountpoint /tmp/nolfox-dmg
           ls -la /tmp/nolfox-dmg
-          test -d /tmp/nolfox-dmg/*.app && echo "application présente dans le DMG"
+          test -d /tmp/nolfox-dmg/NolFox.app || { echo "application absente"; exit 1; }
+          # Le DMG doit contenir tout ce qui fait NolFox, pas un Firefox nu
+          DIST=/tmp/nolfox-dmg/NolFox.app/Contents/Resources/distribution
+          test -f "$DIST/policies.json" || { echo "policies absentes"; exit 1; }
+          test -f "$DIST/extensions/proxy@nolfox.noliae.com.xpi" || { echo "proxy absent"; exit 1; }
+          test -f "$DIST/extensions/theme@nolfox.noliae.com.xpi" || { echo "thème absent"; exit 1; }
+          test -f "$DIST/extensions/langpack-fr@firefox.mozilla.org.xpi" || { echo "langue française absente"; exit 1; }
+          test -f "$DIST/profile/chrome/userChrome.css" || { echo "habillage absent"; exit 1; }
+          echo "DMG complet : proxy, thème, français, policies et habillage présents"
           hdiutil detach /tmp/nolfox-dmg
 
       - name: Publier l'artefact
