@@ -47,11 +47,7 @@ jobs:
         run: bash scripts/brand.sh
 
       - name: Compiler et empaqueter
-        run: |
-          cd build/firefox-source
-          "$PY311" ./mach --no-interactive bootstrap --application-choice browser
-          "$PY311" ./mach build
-          "$PY311" ./mach package
+        run: bash scripts/build.sh
 
       - name: Fabriquer le DMG
         id: paquet

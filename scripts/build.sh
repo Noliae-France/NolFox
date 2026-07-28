@@ -1,16 +1,52 @@
 #!/usr/bin/env bash
 # Build + packaging NolFox. À lancer après fetch.sh et brand.sh.
 set -euo pipefail
-cd "$(dirname "$0")/../build/firefox-source"
+RACINE="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$RACINE/build/firefox-source"
 
-./mach --no-interactive bootstrap --application-choice browser
-./mach build
-./mach package
+PY="${PY311:-python3}"
 
-# La distribution (policies.json) doit être presente a côté du binaire
+"$PY" ./mach --no-interactive bootstrap --application-choice browser
+"$PY" ./mach build
+
+# La distribution (policies + extensions NolFox) doit être en place AVANT
+# l'empaquetage, sinon elle n'entre pas dans l'archive livrée.
 DIST_BIN="$(echo obj-*/dist)"
 mkdir -p "$DIST_BIN/bin/distribution"
-cp -R browser/branding/nolfox/distribution/. "$DIST_BIN/bin/distribution/" || true
+cp -R browser/branding/nolfox/distribution/. "$DIST_BIN/bin/distribution/"
+
+"$PY" ./mach package
+
+# Filet de sécurité : le manifeste d'empaquetage de Firefox ne reprend pas
+# toujours distribution/. On la réinjecte dans l'archive livrée, pour que le
+# proxy, le thème et les policies soient présents dès la première ouverture.
+injecter_dans_archive() {
+  archive="$1"
+  atelier="$(mktemp -d)"
+  tar -xJf "$archive" -C "$atelier"
+  racine_app="$(find "$atelier" -maxdepth 1 -mindepth 1 -type d | head -1)"
+  [ -n "$racine_app" ] || return 0
+  if [ ! -d "$racine_app/distribution" ]; then
+    cp -R browser/branding/nolfox/distribution "$racine_app/distribution"
+    (cd "$atelier" && tar -cJf "$archive.nouveau" ./*)
+    mv "$archive.nouveau" "$archive"
+    echo "distribution NolFox réinjectée dans $(basename "$archive")"
+  fi
+  rm -rf "$atelier"
+}
+
+for archive in obj-*/dist/*.tar.xz; do
+  [ -e "$archive" ] || continue
+  injecter_dans_archive "$(cd "$(dirname "$archive")" && pwd)/$(basename "$archive")"
+done
+
+# Sur macOS la distribution se loge dans les ressources de l'application.
+for app in obj-*/dist/*.app obj-*/dist/*/*.app; do
+  [ -d "$app" ] || continue
+  mkdir -p "$app/Contents/Resources/distribution"
+  cp -R browser/branding/nolfox/distribution/. "$app/Contents/Resources/distribution/"
+  echo "distribution NolFox installée dans $(basename "$app")"
+done
 
 echo "Paquets générés :"
 ls -lh obj-*/dist/*.tar.* obj-*/dist/*.dmg obj-*/dist/install/**/*.exe 2>/dev/null || true
