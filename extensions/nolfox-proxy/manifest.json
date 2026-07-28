@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "NolFox Proxy",
+  "version": "1.0.0",
+  "description": "Proxy chiffré Noliae intégré à NolFox : un clic pour masquer votre adresse IP.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "proxy@nolfox.noliae.com",
+      "strict_min_version": "115.0"
+    }
+  },
+  "permissions": ["proxy", "storage", "browsingData", "<all_urls>"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_action": {
+    "default_title": "NolFox Proxy",
+    "default_popup": "popup.html",
+    "default_icon": "icone.svg"
+  },
+  "icons": {
+    "48": "icone.svg",
+    "96": "icone.svg"
+  }
+}

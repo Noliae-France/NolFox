@@ -31,6 +31,16 @@ jobs:
       - name: Valider policies.json
         run: python3 -m json.tool distribution/policies.json > /dev/null
 
+      - name: Valider les extensions (manifests + empaquetage XPI)
+        run: |
+          for m in extensions/*/manifest.json; do
+            python3 -m json.tool "$m" > /dev/null
+            python3 -c "import json,sys;d=json.load(open('$m'));assert d['browser_specific_settings']['gecko']['id'].endswith('@nolfox.noliae.com'),'id invalide'"
+          done
+          for ext in extensions/*/; do (cd "$ext" && zip -qrX /tmp/test.xpi . && rm /tmp/test.xpi); done
+          node --check extensions/nolfox-proxy/background.js
+          node --check extensions/nolfox-proxy/popup.js
+
       - name: Shellcheck scripts
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck

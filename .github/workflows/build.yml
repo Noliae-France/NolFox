@@ -6,47 +6,87 @@ on:
     tags: ['v*']
 
 jobs:
-  linux-x86_64:
-    name: NolFox Linux x86_64 (base Firefox ESR)
-    runs-on: ubuntu-latest
+  desktop:
+    name: NolFox ${{ matrix.nom }} (base Firefox ESR)
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nom: Linux x86_64
+            os: ubuntu-latest
+            artefact: nolfox-linux-x86_64
+            experimental: false
+          - nom: macOS
+            os: macos-latest
+            artefact: nolfox-macos
+            experimental: false
+          - nom: Windows x86_64
+            os: windows-latest
+            artefact: nolfox-windows-x86_64
+            experimental: true
     steps:
       - uses: actions/checkout@v4
 
-      - name: Libérer de l'espace disque
+      - name: Libérer de l'espace disque (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
           df -h /
 
       - name: Installer nolc (release S3 Noliae)
+        shell: bash
         run: |
-          curl -fsSL -o /tmp/nolc.deb \
-            https://noliae-nolc.s3.gra.io.cloud.ovh.net/nolc-latest-amd64.deb
-          sudo dpkg -i /tmp/nolc.deb
+          case "${{ runner.os }}" in
+            Linux)
+              curl -fsSL -o /tmp/nolc.deb \
+                https://noliae-nolc.s3.gra.io.cloud.ovh.net/nolc-latest-amd64.deb
+              sudo dpkg -i /tmp/nolc.deb ;;
+            *)
+              # Pas de binaire nolc macOS/Windows publié : compilation via cargo
+              cargo install --git https://github.com/Noliae-France/Noliae-Langue --locked nolc 2>/dev/null \
+                || echo "nolc indisponible, les outils Nolc seront sautés" ;;
+          esac
 
       - name: Récupérer les sources Firefox ESR
-        run: bash scripts/fetch.sh
+        shell: bash
+        run: |
+          if ! command -v nolc >/dev/null; then
+            # Repli sans nolc : extraction de la version par python
+            mkdir -p build
+            curl -fsSL https://product-details.mozilla.org/1.0/firefox_versions.json -o build/firefox_versions.json
+            python3 -c "import json;v=json.load(open('build/firefox_versions.json'))['FIREFOX_ESR'].removesuffix('esr');open('VERSION_ESR','w').write(v);print(v)"
+          fi
+          bash scripts/fetch.sh
 
       - name: Appliquer le branding NolFox
+        shell: bash
         run: bash scripts/brand.sh
 
       - name: Build et packaging
+        shell: bash
         run: bash scripts/build.sh
 
       - name: Publier l'artefact
         uses: actions/upload-artifact@v4
         with:
-          name: nolfox-linux-x86_64
-          path: build/firefox-source/obj-*/dist/nolfox-*.tar.*
+          name: ${{ matrix.artefact }}
+          path: |
+            build/firefox-source/obj-*/dist/nolfox-*.tar.*
+            build/firefox-source/obj-*/dist/nolfox-*.dmg
+            build/firefox-source/obj-*/dist/install/sea/nolfox-*.exe
           if-no-files-found: error
           retention-days: 30
 
       - name: Release GitHub (tags)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           gh release create "${GITHUB_REF_NAME}" build/firefox-source/obj-*/dist/nolfox-*.tar.* \
             --title "NolFox ${GITHUB_REF_NAME}" \
-            --notes "NolFox ${GITHUB_REF_NAME}, base Firefox ESR $(cat build/VERSION_ESR)esr. Widevine actif (Netflix, Prime Video, Spotify)." \
+            --notes "NolFox ${GITHUB_REF_NAME}, base Firefox ESR $(cat build/VERSION_ESR)esr. Widevine actif, proxy Noliae et thème Pulse intégrés." \
             || gh release upload "${GITHUB_REF_NAME}" build/firefox-source/obj-*/dist/nolfox-*.tar.* --clobber

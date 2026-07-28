@@ -10,7 +10,7 @@ cd "$(dirname "$0")/../build/firefox-source"
 # La distribution (policies.json) doit être presente a côté du binaire
 DIST_BIN="$(echo obj-*/dist)"
 mkdir -p "$DIST_BIN/bin/distribution"
-cp browser/branding/nolfox/distribution/policies.json "$DIST_BIN/bin/distribution/" || true
+cp -R browser/branding/nolfox/distribution/. "$DIST_BIN/bin/distribution/" || true
 
 echo "Paquets générés :"
 ls -lh obj-*/dist/*.tar.* obj-*/dist/*.dmg obj-*/dist/install/**/*.exe 2>/dev/null || true

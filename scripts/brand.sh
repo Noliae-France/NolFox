@@ -27,4 +27,16 @@ cp mozconfig "$SRC/mozconfig"
 mkdir -p "$SRC/browser/branding/nolfox/distribution"
 cp distribution/policies.json "$SRC/browser/branding/nolfox/distribution/policies.json"
 
-echo "Branding NolFox applique"
+# Extensions maison (proxy Noliae + thème Pulse) empaquetées en XPI,
+# auto-installées au premier lancement via distribution/extensions
+DIST_EXT="$SRC/browser/branding/nolfox/distribution/extensions"
+mkdir -p "$DIST_EXT"
+for ext in extensions/*/; do
+  nom="$(basename "$ext")"
+  id="$(python3 -c "import json;print(json.load(open('$ext/manifest.json'))['browser_specific_settings']['gecko']['id'])")"
+  (cd "$ext" && zip -qrX "../../$nom.xpi" .)
+  mv "$nom.xpi" "$DIST_EXT/$id.xpi"
+  echo "Extension empaquetée : $id"
+done
+
+echo "Branding NolFox appliqué"

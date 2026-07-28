@@ -1,0 +1,50 @@
+{
+  "manifest_version": 2,
+  "name": "NolFox Pulse",
+  "version": "1.0.0",
+  "description": "Interface NolFox : thème sombre Pulse, accent orange, contrastes soignés.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "theme@nolfox.noliae.com",
+      "strict_min_version": "115.0"
+    }
+  },
+  "theme": {
+    "colors": {
+      "frame": "#101014",
+      "toolbar": "#16161c",
+      "toolbar_text": "#f2f2f2",
+      "toolbar_field": "#1a1a20",
+      "toolbar_field_text": "#f2f2f2",
+      "toolbar_field_border": "#2a2a32",
+      "toolbar_field_focus": "#1a1a20",
+      "toolbar_field_border_focus": "#FF4D2E",
+      "tab_selected": "#1f1f26",
+      "tab_text": "#ffffff",
+      "tab_background_text": "#b8b8c0",
+      "tab_line": "#FF4D2E",
+      "tab_loading": "#FF4D2E",
+      "popup": "#16161c",
+      "popup_text": "#f2f2f2",
+      "popup_border": "#2a2a32",
+      "popup_highlight": "#FF4D2E",
+      "popup_highlight_text": "#ffffff",
+      "sidebar": "#101014",
+      "sidebar_text": "#f2f2f2",
+      "sidebar_border": "#2a2a32",
+      "sidebar_highlight": "#FF4D2E",
+      "sidebar_highlight_text": "#ffffff",
+      "bookmark_text": "#f2f2f2",
+      "button_background_hover": "#2a2a32",
+      "button_background_active": "#33333d",
+      "icons": "#f2f2f2",
+      "icons_attention": "#FF4D2E",
+      "ntp_background": "#101014",
+      "ntp_text": "#f2f2f2"
+    },
+    "properties": {
+      "color_scheme": "dark",
+      "content_color_scheme": "auto"
+    }
+  }
+}

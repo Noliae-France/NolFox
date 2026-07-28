@@ -49,6 +49,15 @@ pref("extensions.getAddons.showPane", false);
 pref("browser.discovery.enabled", false);
 pref("dom.private-attribution.submission.enabled", false);
 
+// Interface NolFox : densité compacte autorisée, thème Pulse embarqué
+pref("browser.compactmode.show", true);
+pref("browser.uidensity", 1);
+pref("browser.toolbars.bookmarks.visibility", "always");
+pref("extensions.activeThemeID", "theme@nolfox.noliae.com");
+pref("extensions.autoDisableScopes", 0);
+pref("extensions.installDistroAddons", true);
+pref("browser.theme.dark-private-wins", true);
+
 // Écosystème Noliae : recherche + IA
 pref("browser.startup.homepage", "https://noliae.com");
 
