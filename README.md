@@ -27,6 +27,8 @@ Chaque archive est accompagnée de son empreinte `.sha256`. Pour vérifier :
 shasum -a 256 -c NolFox-*.dmg.sha256
 ```
 
+Les nouveautés de chaque version sont dans le [journal des versions](CHANGELOG.md).
+
 ## Ce que NolFox a en plus de Firefox
 
 | | Firefox | NolFox |
