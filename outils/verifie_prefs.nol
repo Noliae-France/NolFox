@@ -1,0 +1,42 @@
+# Outil NolFox : valide prefs/nolfox.js avant injection dans le build.
+# Chaque ligne non vide doit etre un commentaire (// ou #) ou un appel
+# pref("...", ...); bien forme. Garde-fou CI : une pref cassee rend le
+# navigateur silencieusement sans defaults.
+# Usage : nolc run outils/verifie_prefs.nol -- prefs/nolfox.js
+
+fn ligne_valide(l: Text) -> Bool {
+    let t = trim(l)
+    if len(t) == 0 { return true }
+    if starts_with(t, "//") { return true }
+    if starts_with(t, "#") { return true }
+    if not starts_with(t, "pref(\"") { return false }
+    if not contains(t, ");") { return false }
+    return true
+}
+
+fn main() {
+    let a = args()
+    if len(a) < 1 {
+        print("usage: verifie_prefs <fichier_prefs.js>")
+        return
+    }
+    let contenu_o = file_read(get(a, 0))
+    if not has(contenu_o) {
+        print("erreur: fichier illisible")
+        return
+    }
+    let lignes = split(unwrap_or(contenu_o, ""), "\n")
+    var erreurs = 0
+    var i = 0
+    while i < len(lignes) {
+        if not ligne_valide(get(lignes, i)) {
+            print("ligne invalide " + text(i + 1) + " : " + get(lignes, i))
+            erreurs = erreurs + 1
+        }
+        i = i + 1
+    }
+    if erreurs > 0 {
+        assert(false, text(erreurs) + " ligne(s) invalide(s)")
+    }
+    print("prefs OK (" + text(len(lignes)) + " lignes)")
+}

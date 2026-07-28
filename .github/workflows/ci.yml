@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  outillage:
+    name: Outillage Nolc + scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer nolc (release S3 Noliae)
+        run: |
+          curl -fsSL -o /tmp/nolc.deb \
+            https://noliae-nolc.s3.gra.io.cloud.ovh.net/nolc-latest-amd64.deb
+          sudo dpkg -i /tmp/nolc.deb
+          nolc --version
+
+      - name: Valider les prefs NolFox
+        run: nolc run outils/verifie_prefs.nol -- prefs/nolfox.js
+
+      - name: Extraire la version ESR upstream
+        run: |
+          curl -fsSL https://product-details.mozilla.org/1.0/firefox_versions.json -o /tmp/pd.json
+          nolc run outils/version_esr.nol -- /tmp/pd.json
+          echo "ESR upstream : $(cat VERSION_ESR)"
+
+      - name: Valider policies.json
+        run: python3 -m json.tool distribution/policies.json > /dev/null
+
+      - name: Shellcheck scripts
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          shellcheck scripts/*.sh

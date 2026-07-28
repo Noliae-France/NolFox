@@ -1,0 +1,52 @@
+name: Build NolFox
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  linux-x86_64:
+    name: NolFox Linux x86_64 (base Firefox ESR)
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Liberer de l'espace disque
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - name: Installer nolc (release S3 Noliae)
+        run: |
+          curl -fsSL -o /tmp/nolc.deb \
+            https://noliae-nolc.s3.gra.io.cloud.ovh.net/nolc-latest-amd64.deb
+          sudo dpkg -i /tmp/nolc.deb
+
+      - name: Recuperer les sources Firefox ESR
+        run: bash scripts/fetch.sh
+
+      - name: Appliquer le branding NolFox
+        run: bash scripts/brand.sh
+
+      - name: Build et packaging
+        run: bash scripts/build.sh
+
+      - name: Publier l'artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nolfox-linux-x86_64
+          path: build/firefox-source/obj-*/dist/nolfox-*.tar.*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Release GitHub (tags)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" build/firefox-source/obj-*/dist/nolfox-*.tar.* \
+            --title "NolFox ${GITHUB_REF_NAME}" \
+            --notes "NolFox ${GITHUB_REF_NAME}, base Firefox ESR $(cat build/VERSION_ESR)esr. Widevine actif (Netflix, Prime Video, Spotify)." \
+            || gh release upload "${GITHUB_REF_NAME}" build/firefox-source/obj-*/dist/nolfox-*.tar.* --clobber
