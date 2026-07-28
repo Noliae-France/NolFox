@@ -83,14 +83,31 @@ jobs:
         run: |
           ARCHIVE="$(find build/firefox-source/obj-*/dist -name '*.tar.xz' | head -1)"
           [ -n "$ARCHIVE" ] || { echo "aucune archive produite"; exit 1; }
+
+          # Le contenu est listé une seule fois : enchaîner « tar | grep -q »
+          # coupe le flux de tar et rend le résultat trompeur.
+          tar tJf "$ARCHIVE" > /tmp/contenu.txt
+          echo "$(wc -l < /tmp/contenu.txt) entrées dans l'archive"
+
+          manque=0
           for attendu in \
-            nolfox/distribution/policies.json \
-            nolfox/distribution/extensions/proxy@nolfox.noliae.com.xpi \
-            nolfox/distribution/extensions/theme@nolfox.noliae.com.xpi \
-            nolfox/distribution/extensions/langpack-fr@firefox.mozilla.org.xpi \
-            nolfox/distribution/profile/chrome/userChrome.css; do
-            tar tJf "$ARCHIVE" | grep -q "$attendu" || { echo "manquant : $attendu"; exit 1; }
+            distribution/policies.json \
+            distribution/extensions/proxy@nolfox.noliae.com.xpi \
+            distribution/extensions/theme@nolfox.noliae.com.xpi \
+            distribution/extensions/langpack-fr@firefox.mozilla.org.xpi \
+            distribution/profile/chrome/userChrome.css; do
+            if grep -qF "$attendu" /tmp/contenu.txt; then
+              echo "présent : $attendu"
+            else
+              echo "MANQUANT : $attendu"
+              manque=1
+            fi
           done
+          if [ "$manque" -ne 0 ]; then
+            echo "--- contenu de distribution/ dans l'archive ---"
+            grep -F distribution /tmp/contenu.txt || echo "(aucune entrée distribution)"
+            exit 1
+          fi
           # Les préférences NolFox doivent gagner sur celles de Firefox
           tar xJf "$ARCHIVE" -C /tmp nolfox/browser/omni.ja
           mkdir -p /tmp/verif && cd /tmp/verif
