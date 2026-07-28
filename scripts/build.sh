@@ -26,13 +26,18 @@ injecter_dans_archive() {
   tar -xJf "$archive" -C "$atelier"
   racine_app="$(find "$atelier" -maxdepth 1 -mindepth 1 -type d | head -1)"
   [ -n "$racine_app" ] || return 0
-  if [ ! -d "$racine_app/distribution" ]; then
+  if [ ! -d "$racine_app/distribution" ] || [ ! -f "$racine_app/nolfox.cfg" ]; then
+    rm -rf "$racine_app/distribution"
     cp -R browser/branding/nolfox/distribution "$racine_app/distribution"
+    # Configuration automatique : installe l'habillage dans le profil
+    cp "$RACINE/branding/nolfox.cfg" "$racine_app/nolfox.cfg"
+    mkdir -p "$racine_app/defaults/pref"
+    cp "$RACINE/branding/autoconfig.js" "$racine_app/defaults/pref/autoconfig.js"
     # Les chemins de l'archive restent « nolfox/... » : un préfixe « ./ »
     # empêcherait toute extraction ciblée par la suite.
     (cd "$atelier" && tar -cJf "$archive.nouveau" "$(basename "$racine_app")")
     mv "$archive.nouveau" "$archive"
-    echo "distribution NolFox réinjectée dans $(basename "$archive")"
+    echo "distribution et configuration NolFox réinjectées dans $(basename "$archive")"
   fi
   rm -rf "$atelier"
 }
@@ -48,7 +53,10 @@ for app in obj-*/dist/NolFox.app obj-*/dist/*/NolFox.app; do
   [ -d "$app" ] || continue
   mkdir -p "$app/Contents/Resources/distribution"
   cp -R browser/branding/nolfox/distribution/. "$app/Contents/Resources/distribution/"
-  echo "distribution NolFox installée dans $app"
+  cp "$RACINE/branding/nolfox.cfg" "$app/Contents/Resources/nolfox.cfg"
+  mkdir -p "$app/Contents/Resources/defaults/pref"
+  cp "$RACINE/branding/autoconfig.js" "$app/Contents/Resources/defaults/pref/autoconfig.js"
+  echo "distribution et configuration NolFox installées dans $app"
 done
 
 echo "Paquets générés :"

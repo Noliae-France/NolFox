@@ -95,7 +95,9 @@ jobs:
             distribution/extensions/proxy@nolfox.noliae.com.xpi \
             distribution/extensions/theme@nolfox.noliae.com.xpi \
             distribution/extensions/langpack-fr@firefox.mozilla.org.xpi \
-            distribution/profile/chrome/userChrome.css; do
+            distribution/profile/chrome/userChrome.css \
+            nolfox.cfg \
+            defaults/pref/autoconfig.js; do
             if grep -qF "$attendu" /tmp/contenu.txt; then
               echo "présent : $attendu"
             else

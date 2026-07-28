@@ -97,6 +97,9 @@ jobs:
           test -f "$DIST/extensions/theme@nolfox.noliae.com.xpi" || { echo "thème absent"; exit 1; }
           test -f "$DIST/extensions/langpack-fr@firefox.mozilla.org.xpi" || { echo "langue française absente"; exit 1; }
           test -f "$DIST/profile/chrome/userChrome.css" || { echo "habillage absent"; exit 1; }
+          RES=/tmp/nolfox-dmg/NolFox.app/Contents/Resources
+          test -f "$RES/nolfox.cfg" || { echo "configuration automatique absente"; exit 1; }
+          test -f "$RES/defaults/pref/autoconfig.js" || { echo "activation de la configuration absente"; exit 1; }
           echo "DMG complet : proxy, thème, français, policies et habillage présents"
           hdiutil detach /tmp/nolfox-dmg
 
