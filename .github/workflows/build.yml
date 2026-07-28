@@ -109,9 +109,12 @@ jobs:
             exit 1
           fi
           # Les préférences NolFox doivent gagner sur celles de Firefox
-          tar xJf "$ARCHIVE" -C /tmp nolfox/browser/omni.ja
-          mkdir -p /tmp/verif && cd /tmp/verif
-          unzip -o -q /tmp/nolfox/browser/omni.ja "defaults/preferences/*"
+          rm -rf /tmp/verif && mkdir -p /tmp/verif
+          tar xJf "$ARCHIVE" -C /tmp/verif --wildcards '*/browser/omni.ja'
+          OMNI="$(find /tmp/verif -name omni.ja | head -1)"
+          [ -n "$OMNI" ] || { echo "omni.ja introuvable dans l'archive"; exit 1; }
+          cd /tmp/verif
+          unzip -o -q "$OMNI" "defaults/preferences/*"
           derniere="$(grep -h 'xpinstall.signatures.required' defaults/preferences/*.js | tail -1)"
           echo "$derniere" | grep -q false \
             || { echo "les signatures restent exigées : extensions désactivées au démarrage"; exit 1; }

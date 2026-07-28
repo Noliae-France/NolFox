@@ -28,7 +28,9 @@ injecter_dans_archive() {
   [ -n "$racine_app" ] || return 0
   if [ ! -d "$racine_app/distribution" ]; then
     cp -R browser/branding/nolfox/distribution "$racine_app/distribution"
-    (cd "$atelier" && tar -cJf "$archive.nouveau" ./*)
+    # Les chemins de l'archive restent « nolfox/... » : un préfixe « ./ »
+    # empêcherait toute extraction ciblée par la suite.
+    (cd "$atelier" && tar -cJf "$archive.nouveau" "$(basename "$racine_app")")
     mv "$archive.nouveau" "$archive"
     echo "distribution NolFox réinjectée dans $(basename "$archive")"
   fi
