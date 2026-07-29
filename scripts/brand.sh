@@ -34,6 +34,9 @@ rebrand_marque() {
     | while IFS= read -r -d '' f; do
     sed -i.bak -E \
       -e 's/(-brand-shorter-name[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
+      -e 's/(-brand-shortcut-name[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
+      -e 's/(-vendor-short-name[[:space:]]*=[[:space:]]*).*/\1Noliae/' \
+      -e 's/(vendorShortName[[:space:]]*=[[:space:]]*).*/\1Noliae/' \
       -e 's/(-brand-short-name[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
       -e 's/(-brand-full-name[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
       -e 's/(-brand-product-name[[:space:]]*=[[:space:]]*).*/\1NolFox/' \
