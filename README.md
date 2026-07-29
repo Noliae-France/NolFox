@@ -65,8 +65,9 @@ Les nouveautés de chaque version sont dans le [journal des versions](CHANGELOG.
 
 | Plateforme | État |
 |---|---|
-| macOS (Apple Silicon et Intel) | ✅ DMG prêt à installer (`dmg.yml`) |
-| Linux x86_64 | ✅ Archive `.tar.xz` (`build.yml`) |
+| macOS Apple Silicon | ✅ DMG publié (`dmg.yml`) |
+| macOS Intel | 🧪 Build en cours de finalisation |
+| Linux x86_64 | ✅ Archive publiée (`build.yml`) |
 | Windows x86_64 | 🧪 Build expérimental (`build.yml`) |
 | Android | 🔜 Prévu (base GeckoView/Fenix, dépôt dédié) |
 | iOS | 🔜 Prévu (moteur WebKit imposé par Apple, dépôt dédié) |

@@ -4,7 +4,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 NolFox suit le canal **Firefox ESR** : chaque version indique la base Mozilla
 sur laquelle elle est construite.
 
-## [0.1.0] - 2026-07-28
+## [0.1.0] - 2026-07-29
 
 Première version publiée de NolFox, construite sur Firefox ESR 140.13.0.
 
@@ -26,6 +26,12 @@ Première version publiée de NolFox, construite sur Firefox ESR 140.13.0.
   `.icns` macOS ; fenêtre sombre dès l'ouverture, sans flash blanc.
 - **Écosystème Noliae** : recherche noliae.com par défaut (alias `@noliae`),
   page d'accueil noliae.com, accès direct à Noliae IA.
+- **Interface entièrement en français**, pack de langue officiel embarqué et
+  rebrandé : aucune mention de Firefox ni de Mozilla ne subsiste.
+- **Habillage Pulse** installé dans le profil au premier démarrage par le
+  mécanisme de configuration automatique, sans écraser une personnalisation.
+- **DNS chiffré (DoH)** sur le résolveur Noliae, avec repli sur le DNS du
+  système pour ne pas bloquer les portails captifs.
 - **Outillage Nolc** : extraction de la version ESR upstream et validation
   des préférences, exécutés à chaque intégration continue.
 
