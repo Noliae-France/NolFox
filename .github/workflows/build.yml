@@ -59,6 +59,20 @@ jobs:
               echo "nolc non publié pour ${{ runner.os }} : repli intégré" ;;
           esac
 
+      - name: Installer MozillaBuild (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # Le systeme de build de Firefox exige MozillaBuild dans C:\mozilla-build
+          $url = "https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe"
+          Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\MozillaBuildSetup.exe"
+          Start-Process -FilePath "$env:TEMP\MozillaBuildSetup.exe" -ArgumentList "/S" -Wait
+          if (-not (Test-Path "C:\mozilla-build")) {
+            throw "MozillaBuild ne s'est pas installe dans C:\mozilla-build"
+          }
+          "MOZILLABUILD=C:\mozilla-build" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "MozillaBuild installe"
+
       - name: Récupérer les sources Firefox ESR
         shell: bash
         run: bash scripts/fetch.sh
