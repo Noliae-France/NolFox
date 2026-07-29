@@ -1,4 +1,5 @@
 # mozconfig NolFox : build release base Firefox ESR
+# (la cible processeur est ajoutée par scripts/brand.sh selon la plateforme)
 ac_add_options --enable-application=browser
 ac_add_options --with-app-name=nolfox
 ac_add_options --with-branding=browser/branding/nolfox

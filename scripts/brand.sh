@@ -71,6 +71,10 @@ cat prefs/nolfox.js >> "$SRC/browser/branding/nolfox/pref/firefox-branding.js"
 
 # mozconfig + policies d'entreprise embarquées
 cp mozconfig "$SRC/mozconfig"
+# Sur Mac, NolFox ne vise que les puces Apple Silicon.
+if [ "$(uname -s)" = "Darwin" ]; then
+  echo 'ac_add_options --target=aarch64-apple-darwin' >> "$SRC/mozconfig"
+fi
 mkdir -p "$SRC/browser/branding/nolfox/distribution"
 cp distribution/policies.json "$SRC/browser/branding/nolfox/distribution/policies.json"
 
@@ -103,7 +107,11 @@ done
 # valable pour un build maison, d'ou xpinstall.signatures.required a faux.
 VERSION_ESR_COURANTE="$(cat build/VERSION_ESR)"
 LANGPACK="$DIST_EXT/langpack-fr@firefox.mozilla.org.xpi"
-for plateforme in linux-x86_64 mac win64; do
+case "$(uname -s)" in
+  Darwin) plateformes="mac" ;;
+  *) plateformes="win64 linux-x86_64" ;;
+esac
+for plateforme in $plateformes; do
   if curl -fsSL --retry 2 -o "$LANGPACK" \
     "https://archive.mozilla.org/pub/firefox/releases/${VERSION_ESR_COURANTE}esr/${plateforme}/xpi/fr.xpi"; then
     echo "Pack de langue francaise embarque (${plateforme})"

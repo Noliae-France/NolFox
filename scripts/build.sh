@@ -17,34 +17,36 @@ cp -R browser/branding/nolfox/distribution/. "$DIST_BIN/bin/distribution/"
 
 "$PY" ./mach package
 
-# Filet de sécurité : le manifeste d'empaquetage de Firefox ne reprend pas
-# toujours distribution/. On la réinjecte dans l'archive livrée, pour que le
-# proxy, le thème et les policies soient présents dès la première ouverture.
-injecter_dans_archive() {
-  archive="$1"
-  atelier="$(mktemp -d)"
-  tar -xJf "$archive" -C "$atelier"
-  racine_app="$(find "$atelier" -maxdepth 1 -mindepth 1 -type d | head -1)"
-  [ -n "$racine_app" ] || return 0
-  if [ ! -d "$racine_app/distribution" ] || [ ! -f "$racine_app/nolfox.cfg" ]; then
-    rm -rf "$racine_app/distribution"
-    cp -R browser/branding/nolfox/distribution "$racine_app/distribution"
-    # Configuration automatique : installe l'habillage dans le profil
-    cp "$RACINE/branding/nolfox.cfg" "$racine_app/nolfox.cfg"
-    mkdir -p "$racine_app/defaults/pref"
-    cp "$RACINE/branding/autoconfig.js" "$racine_app/defaults/pref/autoconfig.js"
-    # Les chemins de l'archive restent « nolfox/... » : un préfixe « ./ »
-    # empêcherait toute extraction ciblée par la suite.
-    (cd "$atelier" && tar -cJf "$archive.nouveau" "$(basename "$racine_app")")
-    mv "$archive.nouveau" "$archive"
-    echo "distribution et configuration NolFox réinjectées dans $(basename "$archive")"
-  fi
-  rm -rf "$atelier"
-}
-
-for archive in obj-*/dist/*.tar.xz; do
+# Sur Windows, la distribution accompagne le binaire dans l'archive livrée.
+for archive in obj-*/dist/*.zip; do
   [ -e "$archive" ] || continue
-  injecter_dans_archive "$(cd "$(dirname "$archive")" && pwd)/$(basename "$archive")"
+  chemin="$(cd "$(dirname "$archive")" && pwd)/$(basename "$archive")"
+  python3 - "$chemin" "$RACINE" <<'PY'
+import pathlib, sys, zipfile
+
+archive = pathlib.Path(sys.argv[1])
+racine = pathlib.Path(sys.argv[2])
+source = racine / "build/firefox-source/browser/branding/nolfox/distribution"
+
+with zipfile.ZipFile(archive) as z:
+    entrees = z.namelist()
+if any("/distribution/" in e for e in entrees):
+    print(f"distribution déjà présente dans {archive.name}")
+    raise SystemExit
+
+# Le dossier racine de l'archive (« nolfox/ ») accueille la distribution.
+prefixe = entrees[0].split("/")[0] if entrees else "nolfox"
+ajouts = [(p, f"{prefixe}/distribution/{p.relative_to(source).as_posix()}")
+          for p in sorted(source.rglob("*")) if p.is_file()]
+ajouts.append((racine / "branding/nolfox.cfg", f"{prefixe}/nolfox.cfg"))
+ajouts.append((racine / "branding/autoconfig.js",
+               f"{prefixe}/defaults/pref/autoconfig.js"))
+
+with zipfile.ZipFile(archive, "a", zipfile.ZIP_DEFLATED) as z:
+    for fichier, destination in ajouts:
+        z.write(fichier, destination)
+print(f"distribution NolFox ajoutée à {archive.name}")
+PY
 done
 
 # Sur macOS la distribution se loge dans les ressources de l'application
@@ -60,4 +62,5 @@ for app in obj-*/dist/NolFox.app obj-*/dist/*/NolFox.app; do
 done
 
 echo "Paquets générés :"
-ls -lh obj-*/dist/*.tar.* obj-*/dist/*.dmg obj-*/dist/install/**/*.exe 2>/dev/null || true
+ls -ld obj-*/dist/NolFox.app 2>/dev/null || true
+ls -lh obj-*/dist/*.zip obj-*/dist/install/sea/*.exe 2>/dev/null || true

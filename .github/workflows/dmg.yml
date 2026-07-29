@@ -1,6 +1,6 @@
 name: DMG macOS
 
-# Construit NolFox pour macOS et publie le .dmg prêt à installer.
+# Construit NolFox pour macOS Apple Silicon et publie le .dmg prêt à installer.
 on:
   workflow_dispatch:
     inputs:
@@ -17,17 +17,9 @@ permissions:
 
 jobs:
   dmg:
-    name: NolFox.dmg (${{ matrix.arche }})
-    runs-on: ${{ matrix.runner }}
+    name: NolFox.dmg (Apple Silicon)
+    runs-on: macos-14
     timeout-minutes: 360
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arche: apple-silicon
-            runner: macos-14
-          - arche: intel
-            runner: macos-13
     steps:
       - uses: actions/checkout@v4
 
@@ -75,7 +67,7 @@ jobs:
           hdiutil create -volname "NolFox" -srcfolder "$STAGING" \
             -ov -format UDZO "$DMG_SRC"
 
-          NOM="NolFox-${VERSION}-${{ matrix.arche }}.dmg"
+          NOM="NolFox-${VERSION}-apple-silicon.dmg"
           mkdir -p "$GITHUB_WORKSPACE/livraison"
           cp "$DMG_SRC" "$GITHUB_WORKSPACE/livraison/$NOM"
           cd "$GITHUB_WORKSPACE/livraison"
@@ -106,7 +98,7 @@ jobs:
       - name: Publier l'artefact
         uses: actions/upload-artifact@v4
         with:
-          name: nolfox-dmg-${{ matrix.arche }}
+          name: nolfox-dmg-apple-silicon
           path: livraison/*
           if-no-files-found: error
           retention-days: 30
@@ -120,5 +112,5 @@ jobs:
           case "$TAG" in v*) ;; *) TAG="dmg-${{ steps.paquet.outputs.version }}" ;; esac
           gh release create "$TAG" livraison/* \
             --title "NolFox $TAG" \
-            --notes "NolFox pour macOS (${{ matrix.arche }}), base Firefox ESR ${{ steps.paquet.outputs.version }}esr. Widevine actif, proxy Noliae et thème Pulse intégrés." \
+            --notes "NolFox pour macOS (apple-silicon), base Firefox ESR ${{ steps.paquet.outputs.version }}esr. Widevine actif, proxy Noliae et thème Pulse intégrés." \
             || gh release upload "$TAG" livraison/* --clobber

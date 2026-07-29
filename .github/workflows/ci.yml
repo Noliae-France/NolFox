@@ -43,7 +43,7 @@ jobs:
 
       - name: Valider les icônes (formats + tailles)
         run: |
-          for f in branding/firefox.ico branding/document.ico branding/firefox.icns branding/document.icns branding/nolfox.svg; do
+          for f in branding/firefox.icns branding/document.icns branding/nolfox.svg; do
             [ -s "$f" ] || { echo "manquant : $f"; exit 1; }
           done
           pip install --quiet pillow

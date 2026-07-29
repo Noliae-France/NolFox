@@ -2,14 +2,15 @@
 
 [![CI](https://github.com/Noliae-France/NolFox/actions/workflows/ci.yml/badge.svg)](https://github.com/Noliae-France/NolFox/actions/workflows/ci.yml)
 [![DMG macOS](https://github.com/Noliae-France/NolFox/actions/workflows/dmg.yml/badge.svg)](https://github.com/Noliae-France/NolFox/actions/workflows/dmg.yml)
-[![Build NolFox](https://github.com/Noliae-France/NolFox/actions/workflows/build.yml/badge.svg)](https://github.com/Noliae-France/NolFox/actions/workflows/build.yml)
+[![Windows](https://github.com/Noliae-France/NolFox/actions/workflows/windows.yml/badge.svg)](https://github.com/Noliae-France/NolFox/actions/workflows/windows.yml)
 [![Release](https://img.shields.io/github/v/release/Noliae-France/NolFox?label=release&color=FF4D2E)](https://github.com/Noliae-France/NolFox/releases/latest)
 [![Licence](https://img.shields.io/badge/licence-MPL--2.0-FF4D2E)](LICENSE)
 
-**Le navigateur de Noliae.** Basé sur **Firefox ESR** (canal long support de
-Mozilla), NolFox garde le moteur Gecko, sa stabilité et ses correctifs de
-sécurité, et y ajoute ce que Firefox n'offre pas : un proxy chiffré intégré,
-une interface repensée, l'écosystème Noliae et une vie privée sans compromis.
+**Le navigateur de Noliae, pour macOS Apple Silicon et Windows.** Basé sur **Firefox ESR**
+(canal long support de Mozilla), NolFox garde le moteur Gecko, sa stabilité et
+ses correctifs de sécurité, et y ajoute ce que Firefox n'offre pas : un proxy
+chiffré intégré, une interface repensée en français, l'écosystème Noliae et
+une vie privée sans compromis.
 
 ## Téléchargement
 
@@ -18,14 +19,17 @@ Les versions sont publiées sur la [page des Releases](https://github.com/Noliae
 | Plateforme | Fichier |
 |---|---|
 | macOS Apple Silicon | `NolFox-<version>-apple-silicon.dmg` |
-| macOS Intel | `NolFox-<version>-intel.dmg` |
-| Linux x86_64 | `nolfox-<version>.tar.xz` |
+| Windows x86_64 | `nolfox-<version>.zip` et l'installeur `.exe` |
 
 Chaque archive est accompagnée de son empreinte `.sha256`. Pour vérifier :
 
 ```bash
 shasum -a 256 -c NolFox-*.dmg.sha256
 ```
+
+Ouvrir le `.dmg`, glisser NolFox dans les Applications. L'application n'est
+pas signée par Apple : au premier lancement, clic droit sur NolFox puis
+« Ouvrir ».
 
 Les nouveautés de chaque version sont dans le [journal des versions](CHANGELOG.md).
 
@@ -63,14 +67,8 @@ Les nouveautés de chaque version sont dans le [journal des versions](CHANGELOG.
 
 ## Plateformes
 
-| Plateforme | État |
-|---|---|
-| macOS Apple Silicon | ✅ DMG publié (`dmg.yml`) |
-| macOS Intel | 🧪 Build en cours de finalisation |
-| Linux x86_64 | ✅ Archive publiée (`build.yml`) |
-| Windows x86_64 | 🧪 Build expérimental (`build.yml`) |
-| Android | 🔜 Prévu (base GeckoView/Fenix, dépôt dédié) |
-| iOS | 🔜 Prévu (moteur WebKit imposé par Apple, dépôt dédié) |
+NolFox cible **macOS Apple Silicon** (puces M1 et suivantes) et **Windows
+x86_64**. Deux cibles tenues correctement plutôt que cinq à moitié.
 
 ## Comment c'est construit
 
@@ -80,7 +78,7 @@ officielles puis applique le tout.
 
 | Chemin | Rôle |
 |---|---|
-| `branding/` | Icônes NolFox : source SVG, PNG Linux, `.ico` Windows, `.icns` macOS |
+| `branding/` | Icônes NolFox (SVG, PNG, `.icns`, `.ico`), habillage `userChrome.css`, configuration automatique |
 | `outils/` | Outils **Nolc** : `version_esr.nol` (version ESR upstream), `verifie_prefs.nol` (garde-fou prefs) |
 | `extensions/` | NolFox Proxy + thème Pulse, empaquetés en XPI au build |
 | `prefs/nolfox.js` | Défauts NolFox (DRM, vie privée, anti-pistage, interface, Noliae) |
@@ -105,13 +103,14 @@ Le paquet sort dans `build/firefox-source/obj-*/dist/`.
 
 - **CI** (`ci.yml`, chaque push) : exécute les outils Nolc, valide
   `prefs/nolfox.js`, `policies.json` et les manifests d'extensions,
-  empaquette les XPI, shellcheck des scripts.
-- **Build** (`build.yml`, manuel ou tag `v*`) : build complet Linux et
-  Windows (expérimental) sur les sources ESR courantes, artefacts +
-  Release GitHub sur tag. macOS a son propre workflow, ci-dessous.
-- **DMG macOS** (`dmg.yml`, manuel ou tag `v*`) : construit NolFox pour
-  Apple Silicon et Intel, fabrique le `.dmg`, vérifie qu'il se monte et
-  contient bien l'application, publie l'archive et son empreinte SHA-256.
+  empaquette les XPI, contrôle les icônes, shellcheck des scripts.
+- **DMG macOS** (`dmg.yml`, manuel ou tag `v*`) : compile NolFox pour Apple
+  Silicon, fabrique le `.dmg`, **refuse de publier** si le proxy, le thème,
+  la langue française, les policies ou l'habillage manquent, puis publie
+  l'image et son empreinte SHA-256.
+- **Windows** (`windows.yml`, manuel ou tag `v*`) : installe MozillaBuild,
+  compile, injecte la distribution NolFox dans l'archive et applique la même
+  vérification de contenu avant publication.
 
 ## Licences
 

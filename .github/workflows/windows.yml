@@ -1,0 +1,112 @@
+name: Windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+# Publier une Release exige le droit d'ecriture sur le depot.
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    name: NolFox Windows x86_64 (base Firefox ESR)
+    runs-on: windows-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Espace disque disponible
+        shell: pwsh
+        run: Get-PSDrive -PSProvider FileSystem | Format-Table -AutoSize
+
+      - name: Installer MozillaBuild
+        shell: pwsh
+        run: |
+          # Le systeme de build de Firefox exige MozillaBuild dans C:\mozilla-build
+          $url = "https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe"
+          Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\MozillaBuildSetup.exe"
+          Start-Process -FilePath "$env:TEMP\MozillaBuildSetup.exe" -ArgumentList "/S" -Wait
+          if (-not (Test-Path "C:\mozilla-build")) {
+            throw "MozillaBuild ne s'est pas installe dans C:\mozilla-build"
+          }
+          "MOZILLABUILD=C:\mozilla-build" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "MozillaBuild installe"
+
+      - name: Récupérer les sources Firefox ESR
+        shell: bash
+        run: bash scripts/fetch.sh
+
+      - name: Appliquer le branding NolFox
+        shell: bash
+        run: bash scripts/brand.sh
+
+      - name: Build et packaging
+        shell: bash
+        env:
+          # Le runner a 4 cœurs mais 16 Go : brider l'édition de liens
+          # évite les arrêts brutaux pour dépassement mémoire.
+          MOZ_MAKE_FLAGS: "-j3"
+        run: |
+          bash scripts/build.sh
+          df -h /
+
+      - name: Vérifier que le paquet Windows est complet
+        shell: bash
+        run: |
+          ARCHIVE="$(find build/firefox-source/obj-*/dist -name '*.zip' | head -1)"
+          [ -n "$ARCHIVE" ] || { echo "aucune archive produite"; exit 1; }
+
+          python3 - "$ARCHIVE" <<'PY'
+          import sys, zipfile
+
+          entrees = zipfile.ZipFile(sys.argv[1]).namelist()
+          print(f"{len(entrees)} entrées dans l'archive")
+
+          attendus = [
+              "distribution/policies.json",
+              "distribution/extensions/proxy@nolfox.noliae.com.xpi",
+              "distribution/extensions/theme@nolfox.noliae.com.xpi",
+              "distribution/extensions/langpack-fr@firefox.mozilla.org.xpi",
+              "distribution/profile/chrome/userChrome.css",
+              "nolfox.cfg",
+              "defaults/pref/autoconfig.js",
+          ]
+          manque = False
+          for attendu in attendus:
+              if any(e.endswith(attendu) for e in entrees):
+                  print(f"présent : {attendu}")
+              else:
+                  print(f"MANQUANT : {attendu}")
+                  manque = True
+          if manque:
+              print("--- entrées distribution ---")
+              for e in entrees:
+                  if "distribution" in e:
+                      print(" ", e)
+              sys.exit(1)
+          print("paquet Windows complet")
+          PY
+
+      - name: Publier l'artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nolfox-windows-x86_64
+          path: |
+            build/firefox-source/obj-*/dist/*.zip
+            build/firefox-source/obj-*/dist/install/sea/*.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Release GitHub (tags)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          PAQUETS=$(find build/firefox-source/obj-*/dist -name '*.zip' -o -path '*install/sea/*.exe')
+          gh release upload "${GITHUB_REF_NAME}" $PAQUETS --clobber \
+            || gh release create "${GITHUB_REF_NAME}" $PAQUETS \
+                 --title "NolFox ${GITHUB_REF_NAME}" \
+                 --notes "NolFox ${GITHUB_REF_NAME} pour Windows, base Firefox ESR $(cat build/VERSION_ESR)esr." 
