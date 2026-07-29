@@ -54,7 +54,8 @@ pref("dom.private-attribution.submission.enabled", false);
 pref("browser.display.background_color.dark", "#101014");
 pref("browser.startup.blankWindow", false);
 pref("browser.startup.preXulSkeletonUI", true);
-pref("layout.css.prefers-color-scheme.content-override", 2);
+pref("layout.css.prefers-color-scheme.content-override", 0);
+pref("browser.theme.content-theme", 0);
 
 // Interface NolFox : densité compacte autorisée, thème Pulse embarqué
 pref("browser.compactmode.show", true);

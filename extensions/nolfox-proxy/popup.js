@@ -15,9 +15,14 @@ async function rendre() {
   $("motdepasse").value = e.motdepasse;
   $("bascule").className = e.actif ? "on" : "off";
   $("bascule").textContent = e.actif ? "Désactiver le proxy" : "Activer le proxy";
-  $("statut").textContent = e.actif
-    ? "Trafic chiffré via " + e.hote
-    : "Proxy inactif";
+  const stocke = await browser.storage.local.get({ derniereErreur: "" });
+  if (e.actif && stocke.derniereErreur) {
+    $("statut").textContent = "Erreur : " + stocke.derniereErreur;
+  } else {
+    $("statut").textContent = e.actif
+      ? "Trafic chiffré via " + e.hote
+      : "Proxy inactif";
+  }
 }
 
 $("bascule").addEventListener("click", async () => {
@@ -29,7 +34,23 @@ $("bascule").addEventListener("click", async () => {
     identifiant: $("identifiant").value.trim(),
     motdepasse: $("motdepasse").value
   });
-  rendre();
+  // Test de connexion : affiche l'adresse vue par les sites, ce qui prouve
+// que le trafic passe reellement par le proxy Noliae.
+$("tester").addEventListener("click", async () => {
+  $("statut").textContent = "Test en cours...";
+  try {
+    const reponse = await fetch("https://api.ipify.org", { cache: "no-store" });
+    const adresse = (await reponse.text()).trim();
+    const e = await browser.storage.local.get({ actif: false });
+    $("statut").textContent = e.actif
+      ? "Adresse publique : " + adresse
+      : "Proxy inactif, adresse : " + adresse;
+  } catch (erreur) {
+    $("statut").textContent = "Echec : " + erreur.message;
+  }
+});
+
+rendre();
 });
 
 ["hote", "port", "identifiant", "motdepasse"].forEach((id) =>

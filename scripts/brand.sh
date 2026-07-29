@@ -46,6 +46,20 @@ rebrand_marque() {
       "$f"
     rm -f "$f.bak"
   done
+
+  # Certaines traductions ecrivent « Firefox » en dur au lieu d'utiliser la
+  # variable de marque : sans cela l'interface francaise le laisse paraitre
+  # (« Firefox n'est pas votre navigateur par defaut »). Seule la forme
+  # capitalisee est remplacee, ce qui preserve les URL et les identifiants
+  # techniques, tous en minuscules.
+  find "$cible" \( -name '*.ftl' -o -name '*.properties' -o -name '*.dtd' \) -print0 \
+    | while IFS= read -r -d '' f; do
+    sed -i.bak -E \
+      -e 's/Mozilla Firefox/NolFox/g' \
+      -e 's/Firefox/NolFox/g' \
+      "$f"
+    rm -f "$f.bak"
+  done
 }
 rebrand_marque "$SRC/browser/branding/nolfox"
 
@@ -131,6 +145,22 @@ import sys, zipfile, pathlib
 zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])
 PY
 rebrand_marque "$TMPFR"
+
+# La version est incrementee : sans cela, un profil qui possede deja le pack
+# de langue officiel de meme version le garde, et l'interface continue
+# d'afficher Firefox malgre le rebranding.
+python3 - "$TMPFR" <<'PY'
+import json, pathlib, sys
+
+manifeste = pathlib.Path(sys.argv[1]) / "manifest.json"
+donnees = json.loads(manifeste.read_text())
+morceaux = donnees["version"].split(".")
+morceaux[-1] = str(int(morceaux[-1]) + 1)
+donnees["version"] = ".".join(morceaux)
+donnees["name"] = "Langue : Francais (NolFox)"
+manifeste.write_text(json.dumps(donnees, ensure_ascii=False, indent=2))
+print(f"version du pack de langue portee a {donnees['version']}")
+PY
 ( cd "$TMPFR" && python3 - "$LANGPACK" <<'PY'
 import sys, zipfile, pathlib
 xpi = pathlib.Path(sys.argv[1])

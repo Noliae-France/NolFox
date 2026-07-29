@@ -56,17 +56,17 @@
   box-shadow: 0 0 0 1px var(--nolfox-pulse) !important;
 }
 
-/* La barre d'adresse ne se dilate plus au focus : mise en page stable */
-#urlbar[breakout][breakout-extend] {
-  top: calc((var(--urlbar-toolbar-height) - var(--urlbar-height)) / 2) !important;
-  left: 0 !important;
-  width: 100% !important;
+/* Panneau de suggestions : mêmes surfaces que le reste, sans toucher à sa
+ * géométrie. Forcer la position ou la largeur de #urlbar au focus déplace le
+ * panneau hors de la fenêtre : Firefox calcule cette mise en page lui-même. */
+.urlbarView {
+  border-radius: var(--nolfox-rayon) !important;
 }
 
-#urlbar[breakout][breakout-extend] > #urlbar-input-container {
-  height: var(--urlbar-height) !important;
-  padding-block: 0 !important;
-  padding-inline: 8px !important;
+.urlbarView-row[selected] > .urlbarView-row-inner,
+.urlbarView-row:hover > .urlbarView-row-inner {
+  background: var(--nolfox-surface-haute) !important;
+  border-radius: var(--nolfox-rayon) !important;
 }
 
 /* Boutons de la barre d'outils */

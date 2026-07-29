@@ -39,17 +39,17 @@ browser.proxy.onRequest.addListener(
     ) {
       return { type: "direct" };
     }
+    // « proxyDNS » n'existe que pour SOCKS : le passer à un proxy HTTPS
+    // fait rejeter la règle et le trafic repart en direct.
     return {
       type: etat.type,
       host: etat.hote,
-      port: etat.port,
-      proxyDNS: true
+      port: etat.port
     };
   },
   { urls: ["<all_urls>"] }
 );
 
-// En cas d'erreur proxy, on repasse en direct plutôt que de casser la navigation.
 // Le proxy exige une authentification : elle est fournie ici, jamais
 // stockée en clair dans une URL ni envoyée à un autre hôte.
 browser.webRequest.onAuthRequired.addListener(
@@ -66,10 +66,13 @@ browser.webRequest.onAuthRequired.addListener(
   ["blocking"]
 );
 
-browser.proxy.onError.addListener(() => {
-  etat.actif = false;
-  browser.storage.local.set({ actif: false });
-  majBadge();
+// Une erreur de proxy est remontée à l'utilisateur au lieu d'être avalée :
+// sans cela, le proxy « ne marche pas » sans qu'on sache pourquoi.
+browser.proxy.onError.addListener((erreur) => {
+  console.error("NolFox Proxy :", erreur && erreur.message);
+  browser.storage.local.set({ derniereErreur: String(erreur && erreur.message) });
+  browser.browserAction.setBadgeText({ text: "!" });
+  browser.browserAction.setBadgeBackgroundColor({ color: "#b3261e" });
 });
 
 browser.storage.onChanged.addListener((changements) => {
